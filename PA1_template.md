@@ -320,6 +320,44 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 
 
 ```r
-# code for part 5
+# code for part 5 Define columns in new imputed dataset 'a' for weekday and
+# weekend
+a$weekday <- weekdays(a$date2)  #Gives which day it is (7 values)
+a$w_tf <- a$weekday == "Saturday" | a$weekday == "Sunday"  # Boolean for wekend or weekday
+a$wday_flag <- factor(a$w_tf, labels = c("weekday", "weekend"))  #Final column with right formatting
+
+# Create aggregated dataset for weekend vs weekday average steps plot
+library(sqldf)
 ```
+
+```
+## Loading required package: gsubfn
+## Loading required package: proto
+## Loading required namespace: tcltk
+## Loading required package: RSQLite
+## Loading required package: DBI
+## Loading required package: RSQLite.extfuns
+```
+
+```r
+a_part5 <- sqldf("select wday_flag, interval, avg(steps) as avg_steps\n                from a\n                group by wday_flag, interval")
+```
+
+```
+## Loading required package: tcltk
+```
+
+```r
+
+# Actual plot code
+library(ggplot2)
+plot_part5 <- function() {
+    ggplot(data = a_part5, aes(x = interval, y = avg_steps)) + geom_line(color = "steelblue", 
+        size = 0.5) + facet_wrap(~wday_flag, nrow = 2, ncol = 1) + theme_bw() + 
+        xlab("Interval") + ylab("Number of steps")
+}
+plot_part5()
+```
+
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
 
