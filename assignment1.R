@@ -27,6 +27,8 @@ for (i in 1:nrow(d))
   d[i,4]<- median(t, na.rm = TRUE)
 }
 
+print(c("Mean=", mean(d[,2])), sep = "")
+print(median(d[,2]))
 
 #part3: interval summary
 d<- data.frame(unique(activity$interval))
@@ -91,13 +93,29 @@ plot(d[,1], d[,2], type = "h", xlab = "Date", ylab="Total steps", main = "Histog
 
 print(d[,c(1,3,4)])
 
-
+###############
 
 a$weekday<- weekdays(a$date2)
 a$w_tf<- a$weekday == "Saturday" | a$weekday == "Sunday"
-a$wday_flag <- factor(a$w_tf, labels = c("weekday","weekend"))
+a$wday_flag <- factor(a$w_tf, labels = c("weekend","weekday"))
+
+#names(a)
+
+a_part5<- sqldf("select wday_flag, interval, avg(steps) as avg_steps
+                from a
+                group by wday_flag, interval")
 
 
+plot_part5<- function() {
+ggplot(data = a_part5, aes(x=interval, y=avg_steps)) +
+  geom_line(color = "steelblue", size = 0.5)+
+  facet_wrap(~wday_flag, nrow=2, ncol=1) +
+  theme_bw() +
+  xlab("Interval") +
+  ylab("Number of steps") 
+}
+plot_part5()
 
 
+ggplot(data = a_part5,aes(x=interval, y=avg_steps)) +  geom_line(color = "black", size = 1) 
 

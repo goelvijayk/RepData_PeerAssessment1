@@ -23,7 +23,31 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 ```
 
-#### Part1: Loading and preprocessing the data
+#### Session information for reproducability
+
+```
+R version 3.0.2 (2013-09-25)
+Platform: x86_64-apple-darwin10.8.0 (64-bit)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] tcltk     stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] sqldf_0.4-7.1         RSQLite.extfuns_0.0.1 RSQLite_0.11.4        gsubfn_0.6-5         
+[5] proto_0.3-10          DBI_0.2-7             ggplot2_0.9.3.1      
+
+loaded via a namespace (and not attached):
+ [1] chron_2.3-45       colorspace_1.2-4   dichromat_2.0-0    digest_0.6.4      
+ [5] grid_3.0.2         gtable_0.1.2       labeling_0.2       MASS_7.3-29       
+ [9] munsell_0.4.2      plyr_1.8           RColorBrewer_1.0-5 reshape2_1.2.2    
+[13] scales_0.2.3       stringr_0.6.2      tools_3.0.2       
+```
+
+
+## Part1: Loading and preprocessing the data
 Show any code that is needed to
 - Load the data (i.e. read.csv())
 - Process/transform the data (if necessary) into a format suitable for your analysis
@@ -36,7 +60,7 @@ activity$date2 <- as.Date(activity$date, format = "%Y-%m-%d")  #formatted date
 ```
 
 
-#### Part2: What is mean total number of steps taken per day?
+## Part2: What is mean total number of steps taken per day?
 - For this part of the assignment, you can ignore the missing values in the dataset.
 - Make a histogram of the total number of steps taken each day
 - Calculate and report the mean and median total number of steps taken per day
@@ -68,6 +92,25 @@ plot(d[, 1], d[, 2], type = "h", xlab = "Date", ylab = "Total steps", main = "Hi
 ```
 
 ![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+
+
+Mean and Median of total steps taken per day
+
+```r
+print(c("Mean = ", mean(d[, 2])))
+```
+
+```
+## [1] "Mean = "          "9354.22950819672"
+```
+
+```r
+print(c("Median =", median(d[, 2])))
+```
+
+```
+## [1] "Median =" "10395"
+```
 
 
 Data table of mean and median steps each day
@@ -144,7 +187,7 @@ print(d[, c(1, 3, 4)])
 Median is all 0 because more than 50% users took 0 steps on all days, which pushed median to 0
 
 
-#### Part3: What is the average daily activity pattern?
+## Part3: What is the average daily activity pattern?
 - Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 - Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
@@ -172,7 +215,7 @@ plot(d[, 1], d[, 2], type = "l", xlab = "Interval", ylab = "Average steps",
     main = "Histogram of average steps in each interval")
 ```
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
 
 
 
@@ -186,7 +229,7 @@ print(d[d$total_steps == max(d$total_steps), 1])
 ```
 
 
-#### Part4: Imputing missing values
+## Part4: Imputing missing values
 Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
 - Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 - Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
@@ -196,26 +239,32 @@ Note that there are a number of days/intervals where there are missing values (c
 
 ```r
 # Code for part 4
-print(c('Number of missing values - ',sum(!complete.cases(activity))))
+print(c("Number of missing values - ", sum(!complete.cases(activity))))
 ```
 
 ```
 ## [1] "Number of missing values - " "2304"
 ```
 
+
+Strategy for imputation:
+Use recently calculated mean from each interval, and plug it in where NA.
+Another dataset 'a' is created for storing revised data with imputed values
+
 ```r
 
-
 a<- activity
-for (i in 1:nrow(a))
+for (i in 1:nrow(a)) #For each row in data frame a
 {
-  if(is.na(a[i,1])) 
+  if(is.na(a[i,1])) #if value is null, then
     {
     t<- a[i,3]
-    a[i,1]<- d[d[,1]==t,2]
+    a[i,1]<- d[d[,1]==t,2] #replace with value for time interval, when interval matches with aggregated dataset recently computed
     }
 }
 
+
+#Original data frame 'd' not needed anymore. Reusing below for date level aggregation for creating plots on new data.
 
 d<- data.frame(unique(a$date2)) #just the dates for aggregation
 names(d)<- "date2" 
@@ -237,7 +286,7 @@ names(d)<- c("Date", "Total Steps", "Mean Steps", "Median Steps")
 plot(d[, 1], d[, 2], type = "h", xlab = "Date", ylab = "Total steps", main = "Histogram of total steps each day")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
 
 Please note that values have changed, and mostly increased.
 
@@ -313,7 +362,7 @@ print(d[, c(1, 3, 4)])
 
 Please note that some of the medians are non zero now, because of adjustment for missing values. Since the imputation was done by interval, the aggregation shows comparable values when aggregated by date.
 
-#### Part5: Are there differences in activity patterns between weekdays and weekends?
+## Part5: Are there differences in activity patterns between weekdays and weekends?
 For this part the weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
 - Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 - Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
@@ -359,5 +408,7 @@ plot_part5 <- function() {
 plot_part5()
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11.png) 
+![plot of chunk unnamed-chunk-13](figure/unnamed-chunk-13.png) 
 
+
+Values for weekend are more front loaded with heavier mornings. Weekdays are more spread out through the day.
